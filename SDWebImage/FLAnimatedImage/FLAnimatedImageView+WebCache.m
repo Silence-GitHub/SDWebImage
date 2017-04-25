@@ -53,11 +53,10 @@
                              options:options
                         operationKey:nil
                        setImageBlock:^(UIImage *image, NSData *imageData) {
-                           dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-                               if (!weakSelf) return;
-                               
-                               SDImageFormat imageFormat = [NSData sd_imageFormatForImageData:imageData];
-                               if (imageFormat == SDImageFormatGIF) {
+                           
+                           SDImageFormat imageFormat = [NSData sd_imageFormatForImageData:imageData];
+                           if (imageFormat == SDImageFormatGIF) {
+                               dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
                                    FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:imageData];
                                    dispatch_async(dispatch_get_main_queue(), ^{
                                        __strong typeof(weakSelf) sself = weakSelf;
@@ -66,17 +65,11 @@
                                        sself.animatedImage = animatedImage;
                                        sself.image = nil;
                                    });
-                               } else {
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       __strong typeof(weakSelf) sself = weakSelf;
-                                       if (!sself) return;
-                                       
-                                       sself.image = image;
-                                       sself.animatedImage = nil;
-                                   });
-                               }
-                           });
-                           
+                               });
+                           } else {
+                               weakSelf.image = image;
+                               weakSelf.animatedImage = nil;
+                           }
                        }
                             progress:progressBlock
                            completed:completedBlock];
