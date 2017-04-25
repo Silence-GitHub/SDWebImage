@@ -53,10 +53,19 @@
                              options:options
                         operationKey:nil
                        setImageBlock:^(UIImage *image, NSData *imageData) {
+                           
                            SDImageFormat imageFormat = [NSData sd_imageFormatForImageData:imageData];
                            if (imageFormat == SDImageFormatGIF) {
-                               weakSelf.animatedImage = [FLAnimatedImage animatedImageWithGIFData:imageData];
-                               weakSelf.image = nil;
+                               dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+                                   FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:imageData];
+                                   dispatch_async(dispatch_get_main_queue(), ^{
+                                       __strong typeof(weakSelf) sself = weakSelf;
+                                       if (!sself) return;
+                                       
+                                       sself.animatedImage = animatedImage;
+                                       sself.image = nil;
+                                   });
+                               });
                            } else {
                                weakSelf.image = image;
                                weakSelf.animatedImage = nil;
